@@ -74,6 +74,9 @@ net_fd_close(int *fd)
 {
     int ret = 0;
 
+    if (!fd)        goto EXIT;
+    if (*fd == -1)  goto EXIT;
+
 #if defined(__linux) || defined(__linux__)  || defined(__APPLE__) || defined(__FreeBSD__)
     close(*fd);
 #elif defined(WIN32) || defined(_WIN32)
@@ -81,6 +84,7 @@ net_fd_close(int *fd)
 #endif
 
     *fd = -1;
+EXIT:    
     return ret;
 }
 
