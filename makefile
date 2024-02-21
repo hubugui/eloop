@@ -28,9 +28,9 @@ CFLAGS+=-O2 -m64 -Wall -Wno-incompatible-pointer-types -Wno-unused-but-set-varia
 CFLAGS+=-g -I $(C_INCLUDE)
 SRCS=$(wildcard src/buffer_pipe.c src/event_loop.c src/event_loop_pool.c src/event_channel.c src/event_channel_map.c)
 ifeq ($(detected_OS),Darwin)
-SRCS+=$(wildcard src/event_select_osx.c)
+SRCS+=$(wildcard src/event_io_kqueue.c)
 else
-SRCS+=$(wildcard src/event_select.c)
+SRCS+=$(wildcard src/event_io_select.c)
 endif
 SRCS+=$(wildcard src/net/*.c)
 SRCS+=$(wildcard src/common/*.c)

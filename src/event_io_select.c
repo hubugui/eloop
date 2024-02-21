@@ -27,8 +27,9 @@
 
 #include <stdio.h>
 
+#include "event_io.h"
 #include "event_channel.h"
-#include "event_select.h"
+#include "event_channel_map.h"
 #include "common/list.h"
 
 struct event_io {
@@ -45,7 +46,7 @@ struct event_io {
 };
 
 struct event_io *
-event_io_select_create(void)
+event_io_create(void)
 {
     struct event_io *eio = (struct event_io *) calloc(1, sizeof(*eio));
 
@@ -64,13 +65,13 @@ event_io_select_create(void)
 
     goto EXIT;
 FAIL:
-    event_io_select_delete(&eio);
+    event_io_delete(&eio);
 EXIT:
     return eio;
 }
 
 void 
-event_io_select_delete(struct event_io **eiop)
+event_io_delete(struct event_io **eiop)
 {
     struct event_io *eio = eiop && (*eiop) ? (*eiop) : NULL;
     if (!eio)   return;
@@ -80,7 +81,7 @@ event_io_select_delete(struct event_io **eiop)
 }
 
 int 
-event_io_select_add_fd(struct event_io *eio, struct event_channel *channel)
+event_io_add_fd(struct event_io *eio, struct event_channel *channel)
 {
     if (event_channel_is_exist_mask(channel, FD_MASK_READ))    FD_SET(event_channel_get_fd(channel), &eio->fds_read);
     if (event_channel_is_exist_mask(channel, FD_MASK_WRITE))   FD_SET(event_channel_get_fd(channel), &eio->fds_write);
@@ -91,7 +92,7 @@ event_io_select_add_fd(struct event_io *eio, struct event_channel *channel)
 }
 
 int 
-event_io_select_remove_fd(struct event_io *eio, struct event_channel *channel)
+event_io_remove_fd(struct event_io *eio, struct event_channel *channel)
 {
     if (event_channel_is_exist_mask(channel, FD_MASK_READ))    FD_CLR(event_channel_get_fd(channel), &eio->fds_read);
     if (event_channel_is_exist_mask(channel, FD_MASK_WRITE))   FD_CLR(event_channel_get_fd(channel), &eio->fds_write);
@@ -102,7 +103,7 @@ event_io_select_remove_fd(struct event_io *eio, struct event_channel *channel)
 }
 
 int 
-event_io_select_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned long long timeout)
+event_io_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned long long timeout)
 {
     int ret = 0;
     int live_count = 0;

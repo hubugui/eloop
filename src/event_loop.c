@@ -14,29 +14,10 @@
 
 #include <pthread.h>
 
+#include "event_io.h"
 #include "event_loop.h"
 #include "event_channel_map.h"
-
 #include "common/list.h"
-
-#if defined(__linux) || defined(__linux__) 
-/* epoll */
-#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined (__NetBSD__)
-#include "event_select.h"
-#define event_io_create     event_io_select_create
-#define event_io_delete     event_io_select_delete
-#define event_io_add_fd     event_io_select_add_fd
-#define event_io_remove_fd  event_io_select_remove_fd
-#define event_io_poll       event_io_select_poll
-#elif defined(WIN32) || defined(_WIN32) 
-#include "event_select.h"
-
-#define event_io_create     event_io_select_create
-#define event_io_delete     event_io_select_delete
-#define event_io_add_fd     event_io_select_add_fd
-#define event_io_remove_fd  event_io_select_remove_fd
-#define event_io_poll       event_io_select_poll
-#endif
 
 struct event_timer {
     long long id;

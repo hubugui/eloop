@@ -1,3 +1,12 @@
+/*
+ * event io kqueue implementation
+ *
+ * Copyright (c) 2024 kyleliu <justfavme at gmail dot com> 
+ * All rights reserved.
+ *
+ * This file is part of Eloop.
+ */
+
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
@@ -8,7 +17,9 @@
 #include <string.h>
 #include <time.h>
 
-#include "event_select.h"
+#include "event_io.h"
+#include "event_channel.h"
+#include "event_channel_map.h"
 
 struct event_io {
     int kqfd;
@@ -17,7 +28,8 @@ struct event_io {
 };
 
 struct event_io *
-event_io_select_create(void) {
+event_io_create(void)
+{
     struct event_io *eio = (struct event_io *) calloc(1, sizeof(*eio));
     if (!eio) goto FAIL;
 
@@ -30,13 +42,14 @@ event_io_select_create(void) {
 
     goto EXIT;
 FAIL:
-    event_io_select_delete(&eio);
+    event_io_delete(&eio);
 EXIT:
     return eio;
 }
 
 void 
-event_io_select_delete(struct event_io **eiop) {
+event_io_delete(struct event_io **eiop)
+{
     struct event_io *eio = eiop && (*eiop) ? (*eiop) : NULL;
     if (!eio) return;
     if (eio->kqfd != -1) close(eio->kqfd);
@@ -45,7 +58,8 @@ event_io_select_delete(struct event_io **eiop) {
 }
 
 int 
-event_io_select_add_fd(struct event_io *eio, struct event_channel *channel) {
+event_io_add_fd(struct event_io *eio, struct event_channel *channel)
+{
     int fd = event_channel_get_fd(channel);
     int mask = event_channel_get_mask(channel);
     int flag = 0;
@@ -73,7 +87,8 @@ event_io_select_add_fd(struct event_io *eio, struct event_channel *channel) {
 }
 
 int 
-event_io_select_remove_fd(struct event_io *eio, struct event_channel *channel) {
+event_io_remove_fd(struct event_io *eio, struct event_channel *channel)
+{
     int fd = event_channel_get_fd(channel);
     int mask = event_channel_get_mask(channel);
     int flag = 0;
@@ -108,7 +123,8 @@ event_io_select_remove_fd(struct event_io *eio, struct event_channel *channel) {
 }
 
 int 
-event_io_select_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned long long timeout) {
+event_io_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned long long timeout)
+{
     int ret = 0;
     int n = 0;
 
