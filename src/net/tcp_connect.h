@@ -13,6 +13,8 @@ struct tcp_connect;
 typedef int (*tcp_connect_proc)(struct tcp_connect *connect);
 
 struct tcp_connect *tcp_connect_create(int fd, 
+                                            char *ipv4,
+                                            unsigned short port,
                                             struct event_loop *e_loop, 
                                             tcp_connect_proc read_proc, 
                                             tcp_connect_proc write_proc, 
@@ -31,6 +33,9 @@ struct event_channel *tcp_connect_get_event_channel(struct tcp_connect *connect)
 
 void tcp_connect_set_userdata(struct tcp_connect *connect, void *userdata);
 void *tcp_connect_get_userdata(struct tcp_connect *connect);
+
+unsigned short tcp_connect_get_port(struct tcp_connect *connect);
+char *tcp_connect_get_ipv4(struct tcp_connect *connect, char *ipv4, size_t length);
 
 #ifdef __cplusplus
 }

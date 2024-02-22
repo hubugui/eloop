@@ -16,6 +16,9 @@
 #include "net.h"
 
 struct tcp_connect {
+    char ipv4[512];
+    unsigned short port;
+
     struct event_channel *channel;
     struct event_loop *e_loop;
     tcp_connect_proc procs[PROC_END_OF];
@@ -90,11 +93,15 @@ _tcp_connec_on_read(struct event_channel *channel)
     return ret;
 }
 
-struct tcp_connect *tcp_connect_create(int fd, 
-                                            struct event_loop *e_loop, 
-                                            tcp_connect_proc read_proc, 
-                                            tcp_connect_proc write_proc, 
-                                            tcp_connect_proc close_proc)
+struct tcp_connect *
+tcp_connect_create(int fd, 
+                        char *ipv4,
+                        size_t ipv4_length,
+                        unsigned short port,
+                        struct event_loop *e_loop, 
+                        tcp_connect_proc read_proc, 
+                        tcp_connect_proc write_proc, 
+                        tcp_connect_proc close_proc)
 {
     struct tcp_connect *connect = (struct tcp_connect *) calloc(1, sizeof(*connect));
 
@@ -111,6 +118,9 @@ struct tcp_connect *tcp_connect_create(int fd,
         connect->procs[PROC_WRITE] = write_proc;
         connect->procs[PROC_CLOSE] = close_proc;
 
+        strncpy(connect->ipv4, ipv4, sizeof(connect->ipv4));
+        connect->port = port;
+
         event_channel_set_fd(channel, fd);
         event_channel_set_userdata(channel, connect);
         tcp_connect_mark_read(connect);
@@ -125,7 +135,8 @@ EXIT:
     return connect;
 }
 
-void tcp_connect_delete(struct tcp_connect **connectp)
+void 
+tcp_connect_delete(struct tcp_connect **connectp)
 {
     if (connectp && *connectp) {
         struct tcp_connect *connect = *connectp;
@@ -142,7 +153,8 @@ void tcp_connect_delete(struct tcp_connect **connectp)
     }
 }
 
-int tcp_connect_write(struct tcp_connect *connect)
+int 
+tcp_connect_write(struct tcp_connect *connect)
 {
     int ret = 0;
     int remain_data = 1;
@@ -190,7 +202,8 @@ int tcp_connect_write(struct tcp_connect *connect)
     return ret;
 }
 
-int tcp_connect_mark_read(struct tcp_connect *connect)
+int 
+tcp_connect_mark_read(struct tcp_connect *connect)
 {
     event_channel_add_mask(connect->channel, FD_MASK_READ | FD_MASK_ERROR);
     event_channel_set_read_proc(connect->channel, _tcp_connec_on_read);
@@ -198,7 +211,8 @@ int tcp_connect_mark_read(struct tcp_connect *connect)
     return 0;
 }
 
-int tcp_connect_mark_write(struct tcp_connect *connect)
+int 
+tcp_connect_mark_write(struct tcp_connect *connect)
 {
     event_channel_add_mask(connect->channel, FD_MASK_WRITE);
     event_channel_set_write_proc(connect->channel, _tcp_connec_on_write);
@@ -206,7 +220,8 @@ int tcp_connect_mark_write(struct tcp_connect *connect)
     return 0;
 }
 
-int tcp_connect_unmark_write(struct tcp_connect *connect)
+int 
+tcp_connect_unmark_write(struct tcp_connect *connect)
 {
     event_channel_remove_mask(connect->channel, FD_MASK_WRITE);
     event_channel_set_write_proc(connect->channel, NULL);
@@ -214,22 +229,39 @@ int tcp_connect_unmark_write(struct tcp_connect *connect)
     return 0;
 }
 
-struct event_loop *tcp_connect_get_event_loop(struct tcp_connect *connect)
+struct event_loop *
+tcp_connect_get_event_loop(struct tcp_connect *connect)
 {
     return connect->e_loop;
 }
 
-struct event_channel *tcp_connect_get_event_channel(struct tcp_connect *connect)
+struct event_channel *
+tcp_connect_get_event_channel(struct tcp_connect *connect)
 {
     return connect->channel;
 }
 
-void tcp_connect_set_userdata(struct tcp_connect *connect, void *userdata)
+void 
+tcp_connect_set_userdata(struct tcp_connect *connect, void *userdata)
 {
     connect->userdata = userdata;
 }
 
-void *tcp_connect_get_userdata(struct tcp_connect *connect)
+void *
+tcp_connect_get_userdata(struct tcp_connect *connect)
 {
     return connect->userdata;
+}
+
+unsigned short 
+tcp_connect_get_port(struct tcp_connect *connect)
+{
+    return connect->port;
+}
+
+char *
+tcp_connect_get_ipv4(struct tcp_connect *connect, char *ipv4, size_t length)
+{
+    strncpy(ipv4, connect->ipv4, length);
+    return ipv4;
 }

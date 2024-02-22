@@ -94,11 +94,8 @@ _on_timer_proc(struct event_loop *e_loop,
                     long long id, 
                     void *userdata)
 {
-  int ret = 0;
-
   printf("%s>%d>id=%lld\n", __FUNCTION__, __LINE__, id);
-
-  return ret;
+  return 0;
 }
 
 static int 
@@ -107,11 +104,8 @@ _on_job_proc(struct event_loop *eloop,
                     void *userdata2,
                     void *userdata3)
 {
-    int ret = 0;
-    
     printf("%s>%d>userdata1=%p, userdata2=%p, userdata3=%p\n", __FUNCTION__, __LINE__, userdata1, userdata2, userdata3);
-    
-    return ret;
+    return 0;
 }
 
 static int 
@@ -174,36 +168,14 @@ _on_client_read(struct tcp_connect *connect)
 static int 
 _on_client_new(struct tcp_connect *connect)
 {
-    int ret = 0;
-    size_t pos = 0;
-    char buffer[1024];
     struct event_channel *channel = tcp_connect_get_event_channel(connect);
-    struct buffer_pipe *pipe_recv = event_channel_get_recv_pipe(channel);
-    struct buffer_pipe *pipe_send = event_channel_get_send_pipe(channel);
+    int fd = event_channel_get_fd(channel);
+    char ipv4[512];
+    unsigned short port = tcp_connect_get_port(connect);
+    tcp_connect_get_ipv4(connect, ipv4, sizeof(ipv4));
 
-    printf("%s>%d>\n", __FUNCTION__, __LINE__);
-
-    /* parse */
-    ret = buffer_pipe_find_chr(pipe_recv, '\n', &pos);
-    if (ret == 0) {
-        buffer_pipe_read(pipe_recv, buffer, pos + 1);
-        buffer[pos] = '\0';
-        if (pos > 0 && buffer[pos - 1] == '\r')
-            buffer[pos - 1] = '\0';
-
-        if (strcmp(buffer, "ping") == 0) {
-            /* pong */
-            buffer_pipe_write(pipe_send, "pong\n", 5);
-            tcp_connect_mark_write(connect);
-        } else if (strcmp(buffer, "exit") == 0) {
-            /* close */
-            _on_client_close(connect);
-            ret = 1;
-        }
-    } else
-        ret = -1;
-
-    return ret;
+    printf("%s>%d>client fd=%d, ipv4=%s, port=%d, connect=%p\n", __FUNCTION__, __LINE__, fd, ipv4, port, connect);
+    return 0;
 }
 
 static int
@@ -220,7 +192,7 @@ _run_server(unsigned short port)
         goto EXIT;
     }
 
-    server = tcp_server_open("0.0.0.0", port, 1000, e_pool, _on_client_new, err, sizeof(err));
+    server = tcp_server_open("0.0.0.0", port, 1000, e_pool, _on_client_new, _on_client_read, _on_client_write, _on_client_close, err, sizeof(err));
     if (!server) {
         event_loop_pool_delete(&e_pool);
         ret = -2;

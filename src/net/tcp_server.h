@@ -16,7 +16,10 @@ struct tcp_server *tcp_server_open(const char *addr,
                                         unsigned short port, 
                                         int backlog, 
                                         struct event_loop_pool *e_pool, 
-                                        tcp_connect_proc new_proc, 
+                                        tcp_connect_proc new_proc,
+                                        tcp_connect_proc read_proc,
+                                        tcp_connect_proc write_proc,
+                                        tcp_connect_proc close_proc,
                                         char *err, size_t err_length);
 void tcp_server_close(struct tcp_server **serverp);
 
