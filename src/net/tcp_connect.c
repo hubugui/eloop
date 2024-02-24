@@ -8,8 +8,8 @@
  */
 
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 
 #include "tcp_connect.h"
@@ -118,7 +118,7 @@ tcp_connect_create(int fd,
         connect->procs[PROC_WRITE] = write_proc;
         connect->procs[PROC_CLOSE] = close_proc;
 
-        strncpy(connect->ipv4, ipv4, sizeof(connect->ipv4));
+        strncpy(connect->ipv4, ipv4, ipv4_length);
         connect->port = port;
 
         event_channel_set_fd(channel, fd);

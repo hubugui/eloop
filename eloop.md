@@ -1,0 +1,88 @@
+digraph EventLoop {
+    graph [
+        label = "EventLoop\n\n"
+        labelloc = t
+        fontname = "Helvetica,Arial,sans-serif"
+        fontsize = 32
+        layout = dot
+        rankdir = TB
+        newrank = true
+    ]
+
+    node [
+        color = "#00000088"
+        style=filled
+        shape=oval        
+        pencolor="#00000066" // frames color
+        fontname="Helvetica,Arial,sans-serif"
+        shape=plaintext
+        size="20,20"
+    ]
+
+    edge [
+        color = "#00000088"
+        arrowsize=0.5
+        // fontname="Helvetica,Arial,sans-serif"
+        fontname="FangSong"
+        labeldistance=3
+        labelfontcolor="#0000008"
+        penwidth=1.5
+        // splines=polyline
+        // style=dotted // dotted style symbolizes data transfer
+    ]
+
+    AppServer[shape=box3d; label="PingPong"; fontsize = 22; fillcolor="#ff880022"];
+    AppClient[shape=box3d; label="Ping Poing Cliet"; fontsize = 22; fillcolor="#8FD1C2D3"];
+
+    subgraph cluster_event_loop {
+        label="Event Loop";
+        bgcolor=white;
+        fontsize = 22;
+        EventLoopPool[shape=record; label="Event Loop Pool"; fillcolor="#0044ff22"];
+        subgraph cluster_event_loop {
+            label="multiple";
+            fontsize = 18;
+            EventLoop[shape=record; label="<f0>Event Loop|<f1>Thread"; fillcolor="#0044ff22"];
+        };
+        EventChannelMap[shape=record; label="EventChannelMap"; fillcolor=White;];
+        Timer[shape=record; label="Timer"; fillcolor=White;];
+        Function[shape=record; label="Async Job\nCallback"; fillcolor=White;];
+        Channel[shape=record; label="Event Channel"; fillcolor=White;];
+        EventIo [shape=record; label="Event IO"; fillcolor=White;];
+        IOMultiplex [shape=record; label="<f0>Select\nWindows|<f1>Epoll\nLinux|<f2>Kqueue\nOSX"; fillcolor=White;];
+
+        subgraph cluster_net {
+            label="Net";
+            bgcolor=white;
+            fontsize = 22;
+            TcpServer [shape=oval; label="Tcp Server"; fillcolor="#D0DEAA"];
+            TcpConnect [shape=oval; label="Tcp Connect"; fillcolor="#D0DEAA"];
+        };
+    };
+
+    // 1. create
+    AppServer->EventLoopPool[label="1"; color="#ff880022"; penwidth=5;];
+    EventLoopPool->EventLoop[label="1:N"; color="#0044ff22";];    
+    EventLoop->Timer[label=""; color="#0044ff22"];
+    EventLoop->Function[label=""; color="#0044ff22"];    
+    EventLoop->EventIo[label=""; color="#0044ff22"];
+    EventIo->IOMultiplex[label=""; color="#0044ff22"];
+    EventLoop->EventChannelMap[label=""; color="#0044ff22";];
+    IOMultiplex->Channel[label=""; color="#0044ff22"];
+
+    // 2. tcp server
+    AppServer->TcpServer[label="2. Open"; color="#ff880022"; penwidth=5;];
+    TcpServer->EventLoop:f0[label="2.1 Add\nEvent Channel"; color="#ff880022";];
+
+    // 3. client ping
+    AppClient->IOMultiplex[label="3. Connect\nSend \"ping\""; color="#8FD1C2D3"; penwidth=5;];
+    IOMultiplex->Channel[label="3.1"; color="#8FD1C2D3";];
+    Channel->TcpServer[label="3.2"; color="#8FD1C2D3";];
+    TcpServer->TcpConnect[label="3.3"; color="#8FD1C2D3";];
+    TcpServer->AppServer[label="3.4.\nTcp Connect\n\"ping\""; color="#8FD1C2D3";];
+
+    // 4. server pong
+    AppServer->Channel[label="4. \"pong\""; color="#ff880022"; penwidth=5;];
+    Channel->IOMultiplex[label="4.1"; color="#ff880022";];
+    IOMultiplex->AppClient[label="4.2 \"pong\""; color="#ff880022";];
+}

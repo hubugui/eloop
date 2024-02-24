@@ -1,6 +1,10 @@
 #ifndef __EVENT_LOOP_H__
 #define __EVENT_LOOP_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "event.h"
 #include "event_channel.h"
 
@@ -45,4 +49,7 @@ int event_loop_add_job(struct event_loop *eloop,
                        void *userdata2,
                        void *userdata3);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

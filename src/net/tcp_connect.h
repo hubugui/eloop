@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stddef.h>
+
 #include "../event_loop.h"
 #include "../event_channel.h"
 
@@ -14,6 +16,7 @@ typedef int (*tcp_connect_proc)(struct tcp_connect *connect);
 
 struct tcp_connect *tcp_connect_create(int fd, 
                                             char *ipv4,
+                                            size_t ipv4_length,                                            
                                             unsigned short port,
                                             struct event_loop *e_loop, 
                                             tcp_connect_proc read_proc, 

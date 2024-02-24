@@ -123,7 +123,10 @@ _on_client_close(struct tcp_connect *connect)
 static int 
 _on_client_write(struct tcp_connect *connect)
 {
-    printf("%s>%d>\n", __FUNCTION__, __LINE__);
+    struct event_channel *channel = tcp_connect_get_event_channel(connect);
+    int fd = event_channel_get_fd(channel);
+
+    printf("%s>%d>fd=%d\n", __FUNCTION__, __LINE__, fd);
 
     if (tcp_connect_write(connect) == -1)
         _on_client_close(connect);
@@ -192,7 +195,8 @@ _run_server(unsigned short port)
         goto EXIT;
     }
 
-    server = tcp_server_open("0.0.0.0", port, 1000, e_pool, _on_client_new, _on_client_read, _on_client_write, _on_client_close, err, sizeof(err));
+    server = tcp_server_open("0.0.0.0", port, 1000, e_pool
+                            , _on_client_new, _on_client_read, _on_client_write, _on_client_close, err, sizeof(err));
     if (!server) {
         event_loop_pool_delete(&e_pool);
         ret = -2;

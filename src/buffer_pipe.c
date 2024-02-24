@@ -109,6 +109,35 @@ buffer_pipe_read(struct buffer_pipe *pipe, char *data, size_t length)
 }
 
 int 
+buffer_pipe_read_line(struct buffer_pipe *pipe, char *line, size_t line_len, size_t *real_len)
+{
+    int ret = -2;
+    size_t pos = 0;
+
+    *real_len = 0;
+    while (pos < line_len) {
+        size_t read_len = buffer_pipe_read(pipe, line + pos, 1);
+
+        if (read_len == 0) {
+            ret = -1;
+            break;
+        }
+
+        if (line[pos] == '\r') {
+            ;
+        } else if (line[pos] == '\n') {
+            line[pos] = '\0';
+            ret = 0;
+            *real_len = pos;
+            break;
+        } else
+            pos++;
+    }
+
+    return ret;
+}
+
+int 
 buffer_pipe_find_chr(struct buffer_pipe *pipe, char mark, size_t *pos)
 {
     int ret = -1;

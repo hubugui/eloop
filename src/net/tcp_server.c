@@ -9,10 +9,10 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "tcp_server.h"
 #include "net.h"
-#include "event_channel.h"
 
 struct tcp_server {
     struct event_loop_pool *e_pool;
@@ -37,10 +37,16 @@ _on_tcp_accept(struct event_channel *channel)
     int client_fd = net_tcp_accept(tcp_server_fd, ipv4, sizeof(ipv4), &port, err, sizeof(err));
     if (client_fd != -1) {
         struct event_loop *e_loop = event_loop_pool_next(server->e_pool);
-        struct tcp_connect *connect = tcp_connect_create(client_fd, ipv4, strlen(ipv4), port, e_loop, server->procs[PROC_READ]
-                                                        , server->procs[PROC_WRITE], server->procs[PROC_CLOSE]);
-
-        if (server->new_proc)   server->new_proc(connect);
+        struct tcp_connect *connect = tcp_connect_create(client_fd, ipv4, strlen(ipv4), port, e_loop
+                                                        , server->procs[PROC_READ]
+                                                        , server->procs[PROC_WRITE]
+                                                        , server->procs[PROC_CLOSE]);
+        if (connect) {
+            if (server->new_proc)   server->new_proc(connect);
+        } else {
+            printf("%s>%d>tcp_connect_create(%d) fail\n", __FUNCTION__, __LINE__, client_fd);
+            net_fd_close(client_fd);
+        }
     } else {
         printf("%s>%d>accept(%d) fail, error=\"%s\"\n", __FUNCTION__, __LINE__, tcp_server_fd, err);
         ret = -1;
@@ -67,7 +73,7 @@ tcp_server_open(const char *addr,
     if (!server)            goto ERROR;
 
     server->e_pool = e_pool;
-    server->new_proc = new_proc;    
+    server->new_proc = new_proc;
     server->procs[PROC_READ] = read_proc;
     server->procs[PROC_WRITE] = write_proc;
     server->procs[PROC_CLOSE] = close_proc;

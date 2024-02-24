@@ -24,7 +24,8 @@ struct event_loop_pool {
     pthread_mutex_t mtx;
 };
 
-struct event_loop_pool *event_loop_pool_create(unsigned int number)
+struct event_loop_pool *
+event_loop_pool_create(unsigned int number)
 {
     struct event_loop_pool *e_pool;
 
@@ -53,7 +54,8 @@ EXIT:
     return e_pool;
 }
 
-void event_loop_pool_delete(struct event_loop_pool **e_pool)
+void 
+event_loop_pool_delete(struct event_loop_pool **e_pool)
 {
     if (e_pool && *e_pool) {
         for (int i = 0; i < (*e_pool)->number; i++) {
@@ -67,7 +69,8 @@ void event_loop_pool_delete(struct event_loop_pool **e_pool)
     }    
 }
 
-struct event_loop *event_loop_pool_next(struct event_loop_pool *e_pool)
+struct event_loop *
+event_loop_pool_next(struct event_loop_pool *e_pool)
 {
     struct event_loop *e_loop;
 
@@ -81,7 +84,8 @@ struct event_loop *event_loop_pool_next(struct event_loop_pool *e_pool)
     return e_loop;
 }
 
-struct event_loop *event_loop_pool_get_girst(struct event_loop_pool *e_pool)
+struct event_loop *
+event_loop_pool_get_girst(struct event_loop_pool *e_pool)
 {
     return e_pool->e_loops[0];
 }

@@ -19,6 +19,8 @@ int buffer_pipe_write(struct buffer_pipe *pipe, char *data, size_t length);
 int buffer_pipe_write_head(struct buffer_pipe *pipe, char *data, size_t length);
 
 size_t buffer_pipe_read(struct buffer_pipe *pipe, char *data, size_t length);
+int buffer_pipe_read_line(struct buffer_pipe *pipe, char *line, size_t line_len, size_t *real_len);
+
 int buffer_pipe_find_chr(struct buffer_pipe *pipe, char mark, size_t *pos);
 
 #ifdef __cplusplus
