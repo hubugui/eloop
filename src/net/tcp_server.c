@@ -22,6 +22,7 @@ struct tcp_server {
 
     tcp_connect_proc new_proc;
     tcp_connect_proc procs[PROC_END_OF];
+    void *proc_userdata;
 };
 
 static int 
@@ -40,9 +41,10 @@ _on_tcp_accept(struct event_channel *channel)
         struct tcp_connect *connect = tcp_connect_create(client_fd, ipv4, strlen(ipv4), port, e_loop
                                                         , server->procs[PROC_READ]
                                                         , server->procs[PROC_WRITE]
-                                                        , server->procs[PROC_CLOSE]);
+                                                        , server->procs[PROC_CLOSE]
+                                                        , server->proc_userdata);
         if (connect) {
-            if (server->new_proc)   server->new_proc(connect);
+            if (server->new_proc)   server->new_proc(connect, server->proc_userdata);
         } else {
             printf("%s>%d>tcp_connect_create(%d) fail\n", __FUNCTION__, __LINE__, client_fd);
             net_fd_close(client_fd);
@@ -64,6 +66,7 @@ tcp_server_open(const char *addr,
                     tcp_connect_proc read_proc,
                     tcp_connect_proc write_proc,
                     tcp_connect_proc close_proc,
+                    void *proc_userdata,
                     char *err, 
                     size_t err_length)
 {
@@ -77,6 +80,7 @@ tcp_server_open(const char *addr,
     server->procs[PROC_READ] = read_proc;
     server->procs[PROC_WRITE] = write_proc;
     server->procs[PROC_CLOSE] = close_proc;
+    server->proc_userdata = proc_userdata;
 
     server->fd = net_tcp_server(addr, port, backlog, err, err_length);
     if (server->fd == -1)   goto ERROR;

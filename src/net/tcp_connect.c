@@ -22,6 +22,8 @@ struct tcp_connect {
     struct event_channel *channel;
     struct event_loop *e_loop;
     tcp_connect_proc procs[PROC_END_OF];
+    void *proc_userdata;
+
     void *userdata;
 };
 
@@ -30,7 +32,7 @@ _tcp_connec_on_close(struct event_channel *channel)
 {
     struct tcp_connect *connect = (struct tcp_connect *) event_channel_get_userdata(channel);
 
-    if (connect->procs[PROC_CLOSE]) connect->procs[PROC_CLOSE](connect);
+    if (connect->procs[PROC_CLOSE]) connect->procs[PROC_CLOSE](connect, connect->proc_userdata);
     else                            tcp_connect_delete(&connect);
     return 0;
 }
@@ -40,7 +42,7 @@ _tcp_connec_on_write(struct event_channel *channel)
 {
     struct tcp_connect *connect = (struct tcp_connect *) event_channel_get_userdata(channel);
 
-    if (connect->procs[PROC_WRITE]) connect->procs[PROC_WRITE](connect);
+    if (connect->procs[PROC_WRITE]) connect->procs[PROC_WRITE](connect, connect->proc_userdata);
     return 0;
 }
 
@@ -81,7 +83,7 @@ _tcp_connec_on_read(struct event_channel *channel)
     }
 
     if (has_data == 1) {
-        if (connect->procs[PROC_READ])  ret = connect->procs[PROC_READ](connect);
+        if (connect->procs[PROC_READ])  ret = connect->procs[PROC_READ](connect, connect->proc_userdata);
         if (ret == 1)                   need_close  = 0;
     }
 
@@ -101,7 +103,8 @@ tcp_connect_create(int fd,
                         struct event_loop *e_loop, 
                         tcp_connect_proc read_proc, 
                         tcp_connect_proc write_proc, 
-                        tcp_connect_proc close_proc)
+                        tcp_connect_proc close_proc,
+                        void *proc_userdata)
 {
     struct tcp_connect *connect = (struct tcp_connect *) calloc(1, sizeof(*connect));
 
@@ -117,6 +120,7 @@ tcp_connect_create(int fd,
         connect->procs[PROC_READ] = read_proc;
         connect->procs[PROC_WRITE] = write_proc;
         connect->procs[PROC_CLOSE] = close_proc;
+        connect->proc_userdata = proc_userdata;
 
         strncpy(connect->ipv4, ipv4, ipv4_length);
         connect->port = port;

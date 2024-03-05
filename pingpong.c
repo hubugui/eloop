@@ -109,7 +109,7 @@ _on_job_proc(struct event_loop *eloop,
 }
 
 static int 
-_on_client_close(struct tcp_connect *connect)
+_on_client_close(struct tcp_connect *connect, void *proc_userdata)
 {
     struct event_channel *channel = tcp_connect_get_event_channel(connect);
     int fd = event_channel_get_fd(channel);
@@ -121,7 +121,7 @@ _on_client_close(struct tcp_connect *connect)
 }
 
 static int 
-_on_client_write(struct tcp_connect *connect)
+_on_client_write(struct tcp_connect *connect, void *proc_userdata)
 {
     struct event_channel *channel = tcp_connect_get_event_channel(connect);
     int fd = event_channel_get_fd(channel);
@@ -129,12 +129,12 @@ _on_client_write(struct tcp_connect *connect)
     printf("%s>%d>fd=%d\n", __FUNCTION__, __LINE__, fd);
 
     if (tcp_connect_write(connect) == -1)
-        _on_client_close(connect);
+        _on_client_close(connect, proc_userdata);
     return 0;
 }
 
 static int 
-_on_client_read(struct tcp_connect *connect)
+_on_client_read(struct tcp_connect *connect, void *proc_userdata)
 {
     int ret = 0;
     size_t pos = 0;
@@ -159,7 +159,7 @@ _on_client_read(struct tcp_connect *connect)
             tcp_connect_mark_write(connect);
         } else if (strcmp(buffer, "exit") == 0) {
             /* close */
-            _on_client_close(connect);
+            _on_client_close(connect, proc_userdata);
             ret = 1;
         }
     } else
@@ -169,7 +169,7 @@ _on_client_read(struct tcp_connect *connect)
 }
 
 static int 
-_on_client_new(struct tcp_connect *connect)
+_on_client_new(struct tcp_connect *connect, void *proc_userdata)
 {
     struct event_channel *channel = tcp_connect_get_event_channel(connect);
     int fd = event_channel_get_fd(channel);
@@ -196,7 +196,7 @@ _run_server(unsigned short port)
     }
 
     server = tcp_server_open("0.0.0.0", port, 1000, e_pool
-                            , _on_client_new, _on_client_read, _on_client_write, _on_client_close, err, sizeof(err));
+                            , _on_client_new, _on_client_read, _on_client_write, _on_client_close, NULL, err, sizeof(err));
     if (!server) {
         event_loop_pool_delete(&e_pool);
         ret = -2;

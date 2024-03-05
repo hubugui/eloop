@@ -20,6 +20,7 @@ struct tcp_server *tcp_server_open(const char *addr,
                                         tcp_connect_proc read_proc,
                                         tcp_connect_proc write_proc,
                                         tcp_connect_proc close_proc,
+                                        void *proc_userdata,
                                         char *err, size_t err_length);
 void tcp_server_close(struct tcp_server **serverp);
 

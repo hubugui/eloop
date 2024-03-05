@@ -12,7 +12,7 @@ extern "C" {
 
 struct tcp_connect;
 
-typedef int (*tcp_connect_proc)(struct tcp_connect *connect);
+typedef int (*tcp_connect_proc)(struct tcp_connect *connect, void *userdata);
 
 struct tcp_connect *tcp_connect_create(int fd, 
                                             char *ipv4,
@@ -21,7 +21,8 @@ struct tcp_connect *tcp_connect_create(int fd,
                                             struct event_loop *e_loop, 
                                             tcp_connect_proc read_proc, 
                                             tcp_connect_proc write_proc, 
-                                            tcp_connect_proc close_proc);
+                                            tcp_connect_proc close_proc,
+                                            void *proc_userdata);
 void tcp_connect_delete(struct tcp_connect **connectp);
 
 int tcp_connect_write(struct tcp_connect *connect);
