@@ -26,7 +26,7 @@ RM=rmdir /s /q
 C_INCLUDE+=src
 CFLAGS+=-O2 -m64 -Wall -Wno-incompatible-pointer-types -Wno-unused-but-set-variable -Wno-unused-variable -Wno-unused-function -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -Wno-int-conversion
 CFLAGS+=-g -I $(C_INCLUDE)
-SRCS=$(wildcard src/buffer_pipe.c src/event_loop.c src/event_loop_pool.c src/event_channel.c src/event_channel_map.c)
+SRCS=$(wildcard src/buffer_pipe.c src/event_loop.c src/event_loop_pool.c src/event_channel.c src/event_channel_map.c src/sleep.c)
 ifeq ($(detected_OS),Darwin)
 SRCS+=$(wildcard src/event_io_kqueue.c)
 else

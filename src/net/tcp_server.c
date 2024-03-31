@@ -87,6 +87,7 @@ tcp_server_open(const char *addr,
 
     server->channel = event_channel_create();
     if (!server->channel)   goto ERROR;
+
     event_channel_set_fd(server->channel, tcp_server_get_fd(server));
     event_channel_add_mask(server->channel, FD_MASK_READ);
     event_channel_set_userdata(server->channel, server);

@@ -31,6 +31,7 @@
 #include "event_channel.h"
 #include "event_channel_map.h"
 #include "common/list.h"
+#include "sleep.h"
 
 struct event_io {
     fd_set fds_read;
@@ -109,8 +110,10 @@ event_io_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned l
     int live_count = 0;
     struct timeval tv = {timeout / 1000, (timeout % 1000) * 1000};
 
-    if (event_channel_map_get_length(ec_map) == 0)
+    if (event_channel_map_get_length(ec_map) == 0) {
+        sleep_ms(timeout);
         return 0;
+    }
 
     FD_ZERO(&eio->fds_read_back);
     memcpy(&eio->fds_read_back, &eio->fds_read, sizeof(fd_set));
@@ -125,9 +128,6 @@ event_io_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned l
     if (eio->fds_is_dirty) {
         eio->fds_is_dirty = 0;
         eio->max_fd = event_channel_map_get_max_fd(ec_map);
-#if 0
-        printf("%s>%d>max_fd=%d\n", __FUNCTION__, __LINE__, eio->max_fd);
-#endif
     }
 
     /* 2. select */
@@ -138,10 +138,6 @@ event_io_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned l
             return 0;
 #elif defined(WIN32) || defined(_WIN32) 
         ret = GetLastError();
-#endif
-
-#if 0
-        printf("%s>%d>max_fd=%d, ret=%d\n", __FUNCTION__, __LINE__, eio->max_fd, ret);
 #endif
         return ret;
     }

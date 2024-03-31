@@ -20,6 +20,7 @@
 #include "event_io.h"
 #include "event_channel.h"
 #include "event_channel_map.h"
+#include "sleep.h"
 
 struct event_io {
     int kqfd;
@@ -126,20 +127,21 @@ int
 event_io_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned long long timeout)
 {
     int ret = 0;
-    int n = 0;
 
-    if (event_channel_map_get_length(ec_map) == 0)
+    if (event_channel_map_get_length(ec_map) == 0) {
+        sleep_ms(timeout);
         return 0;
+    }
 
     struct kevent events[FD_SETSIZE];
     struct timespec ts = {timeout / 1000, (timeout % 1000) * 1000 * 1000};
-    n = kevent(eio->kqfd, NULL, 0, events, FD_SETSIZE, &ts);
-    if (n < 0) {
+    ret = kevent(eio->kqfd, NULL, 0, events, FD_SETSIZE, &ts);
+    if (ret < 0) {
         ret = -1;
         goto EXIT;
     }
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < ret; i++) {
         struct event_channel *channel = events[i].udata;
         int fd = event_channel_get_fd(channel);
 

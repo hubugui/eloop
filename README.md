@@ -14,6 +14,7 @@ Eloop is an event-driven foundation library based on the C language, providing:
 During the implementation, reference was made to [libae](https://github.com/aisk/libae). Thanks!
 
 ![](eloop.png)
+![](eloop_sequence.png)
 
 ## Development
 
@@ -24,6 +25,7 @@ During the implementation, reference was made to [libae](https://github.com/aisk
 2. Linux
    * In progress, to be verified.
 3. MacOs
+   *  
 
 ### Build
 
