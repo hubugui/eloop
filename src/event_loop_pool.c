@@ -1,4 +1,4 @@
-/*
+﻿/*
  * event loop
  *
  * Copyright (c) 2023 hubugui <hubugui at gmail dot com> 
@@ -85,7 +85,7 @@ event_loop_pool_next(struct event_loop_pool *e_pool)
 }
 
 struct event_loop *
-event_loop_pool_get_girst(struct event_loop_pool *e_pool)
+event_loop_pool_get_first(struct event_loop_pool *e_pool)
 {
     return e_pool->e_loops[0];
 }

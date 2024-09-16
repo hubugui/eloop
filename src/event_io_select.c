@@ -1,4 +1,4 @@
-/*
+﻿/*
  * event select
  *
  * Copyright (c) 2023 hubugui <hubugui at gmail dot com> 
@@ -153,12 +153,6 @@ event_io_poll(struct event_io *eio, struct event_channel_map *ec_map, unsigned l
             int fd = event_channel_get_fd(channel);
             struct event_channel *channel_next = event_channel_map_get_next(ec_map, &meta);
 
-#if 0
-            printf("%s>%d>fd=%d, ret=%d, r=%d, w=%d, e=%d\n", __FUNCTION__, __LINE__, fd, ret
-                    , FD_ISSET(fd, &eio->fds_read_back)
-                    , FD_ISSET(fd, &eio->fds_write_back)
-                    , FD_ISSET(fd, &eio->fds_exp_back));
-#endif
             if (FD_ISSET(fd, &eio->fds_read_back))     event_ret = event_channel_on_read(channel);
             if (FD_ISSET(fd, &eio->fds_write_back))    event_ret = event_channel_on_write(channel);
             if (FD_ISSET(fd, &eio->fds_exp_back))      event_ret = event_channel_on_error(channel);
